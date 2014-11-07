@@ -14,17 +14,20 @@ public class SMSBroadcastReceiver extends BroadcastReceiver {
     private static final String ACTION = "android.provider.Telephony.SMS_RECEIVED";
 
     @Override
-    public void onReceive(Context context, Intent intent) {
-        String msgContent = "";
-        String functiontype = "";
+    public void onReceive(final Context context, final Intent intent) {
+
         Bundle bundle = intent.getExtras();
         Object messages[] = (Object[]) bundle.get("pdus");
         SmsMessage smsMessage[] = new SmsMessage[messages.length];
         for (int n = 0; n < messages.length; n++) {
             smsMessage[n] = SmsMessage.createFromPdu((byte[]) messages[n]);
-            msgContent = smsMessage[n].getMessageBody();
-            deleteSMS(context, msgContent);
-            this.abortBroadcast();
+            final String msgContent = smsMessage[n].getMessageBody();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    deleteSMS(context, msgContent);
+                }
+            }).start();
         }
     }
 
